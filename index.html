@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI社長の占い鑑定 ✦ RERAISE</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@300;400;700&family=Cinzel:wght@400;600&family=Noto+Sans+JP:wght@300;400&display=swap');
+
+  :root {
+    --ink: #0d0a1a;
+    --gold: #c9a84c;
+    --gold-light: #e8c97a;
+    --deep: #1a1030;
+    --card-bg: #120e28;
+    --mist: #8b7db5;
+    --cream: #f5f0e8;
+    --rose: #c97a8a;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--ink);
+    color: var(--cream);
+    font-family: 'Noto Sans JP', sans-serif;
+    font-weight: 300;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* 星空背景 */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: 
+      radial-gradient(ellipse at 20% 20%, rgba(100,60,180,0.15) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 80%, rgba(180,80,120,0.10) 0%, transparent 50%),
+      radial-gradient(ellipse at 50% 0%, rgba(201,168,76,0.08) 0%, transparent 40%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .stars {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .star {
+    position: absolute;
+    background: white;
+    border-radius: 50%;
+    animation: twinkle var(--dur, 3s) infinite var(--delay, 0s);
+  }
+
+  @keyframes twinkle {
+    0%, 100% { opacity: var(--op, 0.4); }
+    50% { opacity: 0.1; }
+  }
+
+  /* ヘッダー */
+  header {
+    position: relative;
+    z-index: 1;
+    text-align: center;
+    padding: 48px 24px 32px;
+    border-bottom: 1px solid rgba(201,168,76,0.2);
+  }
+
+  .logo-eyebrow {
+    font-family: 'Cinzel', serif;
+    font-size: 10px;
+    letter-spacing: 0.4em;
+    color: var(--gold);
+    text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+
+  h1 {
+    font-family: 'Cinzel', serif;
+    font-size: clamp(22px, 5vw, 36px);
+    color: var(--gold-light);
+    letter-spacing: 0.1em;
+    line-height: 1.3;
+    text-shadow: 0 0 40px rgba(201,168,76,0.4);
+  }
+
+  .subtitle {
+    margin-top: 10px;
+    font-family: 'Noto Serif JP', serif;
+    font-size: 13px;
+    color: var(--mist);
+    letter-spacing: 0.15em;
+  }
+
+  /* メインコンテナ */
+  .container {
+    position: relative;
+    z-index: 1;
+    max-width: 640px;
+    margin: 0 auto;
+    padding: 32px 20px 60px;
+  }
+
+  /* タブ切り替え */
+  .tabs {
+    display: flex;
+    gap: 0;
+    margin-bottom: 32px;
+    border: 1px solid rgba(201,168,76,0.25);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+
+  .tab {
+    flex: 1;
+    padding: 14px 8px;
+    background: transparent;
+    border: none;
+    color: var(--mist);
+    font-family: 'Noto Serif JP', serif;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.3s;
+    letter-spacing: 0.05em;
+  }
+
+  .tab.active {
+    background: rgba(201,168,76,0.15);
+    color: var(--gold-light);
+    border-bottom: 2px solid var(--gold);
+  }
+
+  .tab:hover:not(.active) {
+    background: rgba(255,255,255,0.04);
+    color: var(--cream);
+  }
+
+  /* フォームセクション */
+  .form-section {
+    background: var(--card-bg);
+    border: 1px solid rgba(201,168,76,0.2);
+    border-radius: 8px;
+    padding: 28px 24px;
+    margin-bottom: 24px;
+  }
+
+  .section-label {
+    font-family: 'Cinzel', serif;
+    font-size: 10px;
+    letter-spacing: 0.35em;
+    color: var(--gold);
+    text-transform: uppercase;
+    margin-bottom: 20px;
+  }
+
+  .field {
+    margin-bottom: 18px;
+  }
+
+  label {
+    display: block;
+    font-size: 12px;
+    color: var(--mist);
+    letter-spacing: 0.1em;
+    margin-bottom: 8px;
+  }
+
+  input, select, textarea {
+    width: 100%;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(139,125,181,0.3);
+    border-radius: 4px;
+    color: var(--cream);
+    font-family: 'Noto Sans JP', sans-serif;
+    font-size: 14px;
+    padding: 12px 14px;
+    outline: none;
+    transition: border-color 0.2s;
+    -webkit-appearance: none;
+  }
+
+  input:focus, select:focus, textarea:focus {
+    border-color: var(--gold);
+    background: rgba(201,168,76,0.05);
+  }
+
+  select option { background: var(--deep); }
+  textarea { resize: vertical; min-height: 80px; }
+
+  /* タロットカード選択 */
+  .card-spread {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    margin: 16px 0;
+    flex-wrap: wrap;
+  }
+
+  .tarot-card {
+    width: 72px;
+    height: 110px;
+    border: 1px solid rgba(201,168,76,0.3);
+    border-radius: 6px;
+    background: linear-gradient(135deg, #1a0e3a, #0d0a1a);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+    transition: all 0.3s;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .tarot-card::before {
+    content: '';
+    position: absolute;
+    inset: 3px;
+    border: 1px solid rgba(201,168,76,0.15);
+    border-radius: 4px;
+  }
+
+  .tarot-card:hover, .tarot-card.selected {
+    border-color: var(--gold);
+    box-shadow: 0 0 20px rgba(201,168,76,0.3);
+    transform: translateY(-4px);
+    background: linear-gradient(135deg, #2a1a50, #1a0e3a);
+  }
+
+  .card-hint {
+    font-size: 11px;
+    color: var(--mist);
+    text-align: center;
+    margin-top: 8px;
+  }
+
+  /* 鑑定ボタン */
+  .btn-divine {
+    width: 100%;
+    padding: 18px;
+    background: linear-gradient(135deg, #8b5e3c, #c9a84c, #8b5e3c);
+    background-size: 200% 100%;
+    border: none;
+    border-radius: 4px;
+    color: var(--ink);
+    font-family: 'Noto Serif JP', serif;
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    cursor: pointer;
+    transition: all 0.4s;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .btn-divine:hover:not(:disabled) {
+    background-position: 100% 0;
+    box-shadow: 0 4px 30px rgba(201,168,76,0.4);
+  }
+
+  .btn-divine:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  /* ローディング */
+  .loading {
+    text-align: center;
+    padding: 48px 24px;
+    display: none;
+  }
+
+  .loading.show { display: block; }
+
+  .crystal-ball {
+    font-size: 64px;
+    animation: float 2s ease-in-out infinite, glow 2s ease-in-out infinite;
+    display: block;
+    margin-bottom: 16px;
+  }
+
+  @keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+  }
+
+  @keyframes glow {
+    0%, 100% { filter: drop-shadow(0 0 8px rgba(201,168,76,0.4)); }
+    50% { filter: drop-shadow(0 0 24px rgba(201,168,76,0.8)); }
+  }
+
+  .loading-text {
+    font-family: 'Noto Serif JP', serif;
+    color: var(--mist);
+    font-size: 14px;
+    letter-spacing: 0.15em;
+  }
+
+  /* 鑑定結果 */
+  .result {
+    display: none;
+    background: var(--card-bg);
+    border: 1px solid rgba(201,168,76,0.35);
+    border-radius: 8px;
+    overflow: hidden;
+    animation: reveal 0.6s ease-out;
+  }
+
+  .result.show { display: block; }
+
+  @keyframes reveal {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .result-header {
+    background: linear-gradient(135deg, rgba(201,168,76,0.15), rgba(139,125,181,0.15));
+    padding: 24px;
+    text-align: center;
+    border-bottom: 1px solid rgba(201,168,76,0.2);
+  }
+
+  .result-title {
+    font-family: 'Cinzel', serif;
+    font-size: 11px;
+    letter-spacing: 0.4em;
+    color: var(--gold);
+    margin-bottom: 8px;
+  }
+
+  .result-name {
+    font-family: 'Noto Serif JP', serif;
+    font-size: 20px;
+    color: var(--cream);
+  }
+
+  .result-body {
+    padding: 28px 24px;
+  }
+
+  .result-body p {
+    font-family: 'Noto Serif JP', serif;
+    font-size: 14px;
+    line-height: 2.0;
+    color: #d4c8e8;
+    white-space: pre-wrap;
+  }
+
+  .result-footer {
+    padding: 20px 24px;
+    border-top: 1px solid rgba(201,168,76,0.15);
+    text-align: center;
+  }
+
+  .mama-comment {
+    font-size: 12px;
+    color: var(--mist);
+    font-style: italic;
+    margin-bottom: 16px;
+  }
+
+  .btn-again {
+    background: transparent;
+    border: 1px solid rgba(201,168,76,0.4);
+    color: var(--gold);
+    padding: 10px 28px;
+    border-radius: 4px;
+    font-family: 'Noto Sans JP', sans-serif;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .btn-again:hover {
+    background: rgba(201,168,76,0.1);
+  }
+
+  /* エラー */
+  .error-msg {
+    background: rgba(201,100,100,0.15);
+    border: 1px solid rgba(201,100,100,0.4);
+    border-radius: 4px;
+    padding: 12px 16px;
+    font-size: 13px;
+    color: #e8a0a0;
+    margin-top: 12px;
+    display: none;
+  }
+
+  .error-msg.show { display: block; }
+
+  /* フッター */
+  footer {
+    position: relative;
+    z-index: 1;
+    text-align: center;
+    padding: 24px;
+    border-top: 1px solid rgba(201,168,76,0.1);
+    font-size: 11px;
+    color: rgba(139,125,181,0.5);
+    letter-spacing: 0.1em;
+  }
+
+  .divider {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 20px 0;
+    color: rgba(201,168,76,0.3);
+    font-size: 12px;
+  }
+
+  .divider::before, .divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: rgba(201,168,76,0.2);
+  }
+</style>
+</head>
+<body>
+
+<!-- 星空 -->
+<div class="stars" id="stars"></div>
+
+<header>
+  <div class="logo-eyebrow">✦ AI-Powered Fortune Telling ✦</div>
+  <h1>RERAISE<br><span style="font-size:0.6em;color:var(--mist)">AI社長の占い鑑定</span></h1>
+  <p class="subtitle">星と数字が、あなたの今を映し出す</p>
+</header>
+
+<div class="container">
+
+  <!-- タブ -->
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('tarot')">🃏 タロット</button>
+    <button class="tab" onclick="switchTab('sanmei')">☯ 算命学</button>
+    <button class="tab" onclick="switchTab('both')">✨ 総合鑑定</button>
+  </div>
+
+  <!-- フォーム -->
+  <div class="form-section">
+    <div class="section-label">あなたのことを教えてください</div>
+
+    <div class="field">
+      <label>お名前（ニックネームでもOK）</label>
+      <input type="text" id="name" placeholder="例：さくら">
+    </div>
+
+    <div class="field">
+      <label>生年月日</label>
+      <input type="date" id="birthdate">
+    </div>
+
+    <div class="field">
+      <label>今、一番気になっていること</label>
+      <select id="theme">
+        <option value="">選んでください</option>
+        <option value="恋愛・パートナーシップ">💕 恋愛・パートナーシップ</option>
+        <option value="仕事・お金">💼 仕事・お金</option>
+        <option value="人間関係">🌸 人間関係</option>
+        <option value="健康・体のこと">🌿 健康・体のこと</option>
+        <option value="これからの方向性">🌟 これからの方向性</option>
+      </select>
+    </div>
+
+    <!-- タロット用カード選択 -->
+    <div id="tarot-section">
+      <div class="divider">カードを1枚選んでください</div>
+      <div class="card-spread" id="card-spread"></div>
+      <p class="card-hint" id="card-hint">ピンときたカードを直感で選んで✦</p>
+    </div>
+
+  </div>
+
+  <button class="btn-divine" id="btn-divine" onclick="startDivination()">
+    ✦ 今すぐ鑑定する ✦
+  </button>
+  <div class="error-msg" id="error-msg"></div>
+
+  <!-- ローディング -->
+  <div class="loading" id="loading">
+    <span class="crystal-ball">🔮</span>
+    <p class="loading-text">星が語りかけています…</p>
+  </div>
+
+  <!-- 結果 -->
+  <div class="result" id="result">
+    <div class="result-header">
+      <div class="result-title">✦ YOUR READING ✦</div>
+      <div class="result-name" id="result-name"></div>
+    </div>
+    <div class="result-body">
+      <p id="result-text"></p>
+    </div>
+    <div class="result-footer">
+      <p class="mama-comment">「ママに詳しく話してみて？もっと深いところが見えてくるかも 🌙」</p>
+      <button class="btn-again" onclick="resetForm()">もう一度占う</button>
+    </div>
+  </div>
+
+</div>
+
+<footer>✦ RERAISE — AI社長が経営する、本物の夜 ✦</footer>
+
+<script>
+// 星を生成
+const starsEl = document.getElementById('stars');
+for (let i = 0; i < 80; i++) {
+  const s = document.createElement('div');
+  s.className = 'star';
+  const size = Math.random() * 2 + 0.5;
+  s.style.cssText = `
+    width:${size}px; height:${size}px;
+    left:${Math.random()*100}%; top:${Math.random()*100}%;
+    --op:${Math.random()*0.5+0.1};
+    --dur:${Math.random()*3+2}s;
+    --delay:${Math.random()*4}s;
+  `;
+  starsEl.appendChild(s);
+}
+
+// タロットカード
+const tarotCards = [
+  {emoji:'🌟', name:'星'},
+  {emoji:'🌙', name:'月'},
+  {emoji:'☀️', name:'太陽'},
+  {emoji:'⚡', name:'塔'},
+  {emoji:'❤️', name:'恋人'},
+  {emoji:'⚖️', name:'正義'},
+  {emoji:'🔮', name:'女教皇'},
+  {emoji:'🌍', name:'世界'},
+  {emoji:'💀', name:'死神'},
+  {emoji:'🎡', name:'運命'},
+];
+
+let selectedCard = null;
+let currentTab = 'tarot';
+
+// カードを描画
+function renderCards() {
+  const spread = document.getElementById('card-spread');
+  spread.innerHTML = '';
+  tarotCards.forEach((card, i) => {
+    const el = document.createElement('div');
+    el.className = 'tarot-card';
+    el.innerHTML = card.emoji;
+    el.title = card.name;
+    el.onclick = () => selectCard(i, el, card);
+    spread.appendChild(el);
+  });
+}
+
+function selectCard(i, el, card) {
+  document.querySelectorAll('.tarot-card').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+  selectedCard = card;
+  document.getElementById('card-hint').textContent = `「${card.name}」のカードを選びました ✦`;
+}
+
+function switchTab(tab) {
+  currentTab = tab;
+  document.querySelectorAll('.tab').forEach((t, i) => {
+    t.classList.toggle('active', ['tarot','sanmei','both'][i] === tab);
+  });
+  const tarotSec = document.getElementById('tarot-section');
+  tarotSec.style.display = (tab === 'sanmei') ? 'none' : 'block';
+  selectedCard = null;
+  if (tab !== 'sanmei') renderCards();
+}
+
+renderCards();
+
+// 鑑定開始
+async function startDivination() {
+  const name = document.getElementById('name').value.trim();
+  const birthdate = document.getElementById('birthdate').value;
+  const theme = document.getElementById('theme').value;
+  const errEl = document.getElementById('error-msg');
+
+  errEl.classList.remove('show');
+
+  if (!name) { showError('お名前を入力してください'); return; }
+  if (!birthdate) { showError('生年月日を入力してください'); return; }
+  if (!theme) { showError('気になることを選んでください'); return; }
+  if (currentTab !== 'sanmei' && !selectedCard) { showError('カードを1枚選んでください'); return; }
+
+  document.getElementById('btn-divine').disabled = true;
+  document.getElementById('loading').classList.add('show');
+  document.getElementById('result').classList.remove('show');
+
+  // プロンプト作成
+  const age = calcAge(birthdate);
+  const cardInfo = selectedCard ? `選んだタロットカード：${selectedCard.name}（${selectedCard.emoji}）` : '';
+
+  let prompt = '';
+  if (currentTab === 'tarot') {
+    prompt = `あなたはスナック「RERAISE」のAI占い師です。温かく、少し神秘的で、でも親しみやすい文体で鑑定してください。
+
+お客様情報：
+- お名前：${name}さん（${age}歳）
+- 生年月日：${birthdate}
+- テーマ：${theme}
+- ${cardInfo}
+
+タロットカード「${selectedCard?.name}」を引いた${name}さんへの鑑定結果を書いてください。
+・カードの意味と今の${name}さんへのメッセージ
+・「${theme}」についての具体的なアドバイス
+・今月の行動のヒント
+
+全体で300〜400文字、スナックバーでママが語りかけるような温かいトーンで。`;
+  } else if (currentTab === 'sanmei') {
+    prompt = `あなたはスナック「RERAISE」のAI占い師です。算命学の観点から鑑定してください。
+
+お客様情報：
+- お名前：${name}さん（${age}歳）
+- 生年月日：${birthdate}
+- テーマ：${theme}
+
+${birthdate}生まれの${name}さんの算命学的な性質、今の運気の流れ、「${theme}」へのアドバイスを書いてください。
+・生まれ持った本質・才能
+・現在の運気と流れ
+・「${theme}」に関する具体的なメッセージ
+
+全体で300〜400文字、スナックバーで常連客に語りかけるような温かいトーンで。`;
+  } else {
+    prompt = `あなたはスナック「RERAISE」のAI占い師です。タロットと算命学を組み合わせた総合鑑定をしてください。
+
+お客様情報：
+- お名前：${name}さん（${age}歳）
+- 生年月日：${birthdate}
+- テーマ：${theme}
+- ${cardInfo}
+
+タロット「${selectedCard?.name}」と算命学の両面から総合的な鑑定結果を書いてください。
+・タロットからのメッセージ
+・算命学が示す今の運気
+・「${theme}」への具体的なアドバイス
+・今後3ヶ月の過ごし方のヒント
+
+全体で400〜500文字、特別感のある温かいトーンで。`;
+  }
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+
+    const data = await res.json();
+    const text = data.content?.find(b => b.type === 'text')?.text || '鑑定結果を取得できませんでした。';
+
+    document.getElementById('loading').classList.remove('show');
+    document.getElementById('result-name').textContent = `${name}さんへの鑑定結果`;
+    document.getElementById('result-text').textContent = text;
+    document.getElementById('result').classList.add('show');
+    document.getElementById('result').scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+  } catch (e) {
+    document.getElementById('loading').classList.remove('show');
+    showError('鑑定中にエラーが発生しました。もう一度お試しください。');
+  }
+
+  document.getElementById('btn-divine').disabled = false;
+}
+
+function showError(msg) {
+  const el = document.getElementById('error-msg');
+  el.textContent = msg;
+  el.classList.add('show');
+}
+
+function calcAge(birthdate) {
+  const today = new Date();
+  const birth = new Date(birthdate);
+  let age = today.getFullYear() - birth.getFullYear();
+  const m = today.getMonth() - birth.getMonth();
+  if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) age--;
+  return age;
+}
+
+function resetForm() {
+  document.getElementById('result').classList.remove('show');
+  document.getElementById('name').value = '';
+  document.getElementById('birthdate').value = '';
+  document.getElementById('theme').value = '';
+  selectedCard = null;
+  renderCards();
+  document.getElementById('card-hint').textContent = 'ピンときたカードを直感で選んで✦';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+</script>
+</body>
+</html>
